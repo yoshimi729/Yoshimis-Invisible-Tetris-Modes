@@ -33,6 +33,7 @@ function PhantomManiaGame:new(secret_inputs)
 	self.section_tetrises = {[0] = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	self.gm_pace = 0
 	self.gm_multiple = 1
+	self.stats_draw_flag = -1 -- numerical flag for drawing stats if the game is paused. reset on advanceOneFrame call
 	self.randomizer = History6RollsRandomizer()
 end
 
@@ -91,6 +92,7 @@ function PhantomManiaGame:hitTorikan(old_level, new_level)
 end
 
 function PhantomManiaGame:advanceOneFrame()
+	self.stats_draw_flag = -1
 	if self.secret_erasure then
 		for i = 1, 3 do
 			self.grid:clearSpecificRow(i)
@@ -243,16 +245,17 @@ function PhantomManiaGame:drawScoringInfo()
 		love.graphics.printf(self:getSectionEndLevel(), text_x, 370, 40, "right")
 	end
 	
-	if self.clear or self.game_over then
+	self.stats_draw_flag = self.stats_draw_flag + 1
+	if self.clear or self.game_over or not self.save_replay or self.stats_draw_flag > 0 then
 		love.graphics.setFont(font_3x5_2)
 		love.graphics.printf("GM PACE         (TETRIS PACE)", text_x, 260, 300, "left")
 		love.graphics.printf("TETRISES", text_x, 200, 80, "left")
 		love.graphics.printf("SECTION TETRISES", text_x + 98, 200, 160, "center")
 		love.graphics.setFont(font_3x5_3)
-		love.graphics.printf("GM x "..string.format("%.2f", self.gm_pace).."  (x "..string.format("%.2f", self.tetrises*999/(self.level*31))..")", text_x, 280, 350, "left")
+		love.graphics.printf("GM x "..string.format("%.2f", self.gm_pace).."  (x "..string.format("%.2f", math.max(self.tetrises*999/(self.level*31), 0))..")", text_x, 280, 350, "left")
 		love.graphics.printf(self.tetrises, text_x, 220, 40, "left")
 		for i=0, table.getn(self.section_tetrises) do
-			love.graphics.printf(self.section_tetrises[i] % 10, text_x + 80 + 20*i, 220, 50, "left") -- section tetrises table is 0 indexed. 10 tetrises also displays as 0 to prevent text overlap. it's a band-aid solution but all the information is still there due to the total tetris display
+			love.graphics.printf(self.section_tetrises[i], text_x + 80 + 20*i, 220, 50, "left") -- section tetrises table is 0 indexed
 		end
 	end
 
