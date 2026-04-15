@@ -198,11 +198,13 @@ end
 
 function PhantomManiaGame:evaluateGMPace()
 	local section_pace = 6
-	for i = 0, math.floor(self.level/100) - 1 do
+	for i = 0, self.level == 999 and 9 or math.floor(self.level/100) - 1 do
 		section_pace = math.min(section_pace, self.section_tetrises[i]/(i == 9 and 1 or 2))
 	end
+	section_pace = tonumber(string.format("%.2f", section_pace))
+
 	local tetris_pace = self.tetrises*999/(self.level*31)
-	local tetris_pace = tonumber(string.format("%.2f", tetris_pace))       
+	tetris_pace = tonumber(string.format("%.2f", tetris_pace))       
 	self.gm_pace = math.min(section_pace, tetris_pace)
 end
 
